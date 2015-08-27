@@ -5,7 +5,8 @@
  * Java Programming Essentials
  */
 
-import java.io.*;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -65,7 +66,7 @@ public class MP1 {
         List<String> linesListIndexed = new ArrayList<>();
 
         for (int i : getIndexes()) {
-            String line = linesList.get(i).toLowerCase();
+            String line = linesList.get(i).toLowerCase().trim();
             StringTokenizer st = new StringTokenizer(line, delimiters);
             while (st.hasMoreTokens()) {
                 linesListIndexed.add(st.nextToken());
@@ -75,7 +76,7 @@ public class MP1 {
         Set<String> stopWordsSet = new HashSet<>(Arrays.asList(stopWordsArray));
         linesListIndexed.removeAll(stopWordsSet);
 
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        final HashMap<String, Integer> map = new HashMap<>();
 
         for (String s : linesListIndexed) {
             if (map.containsKey(s)) {
@@ -85,34 +86,30 @@ public class MP1 {
                 map.put(s, 1);
             }
         }
+        List<String> finalList = new ArrayList<>();
+        for (String mapKey : map.keySet()) {
+            finalList.add(mapKey);
+        }
 
-        ValueComparator<String, Integer> comparator = new ValueComparator<String, Integer>(map);
-        Map<String, Integer> sortedMap = new TreeMap<>(comparator);
-        sortedMap.putAll(map);
-        List<String> sortedList = new ArrayList<>(sortedMap.keySet());
-
+        Collections.sort(finalList, new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                if (map.get(s1) < map.get(s2)) {
+                    return 1;
+                } else if (map.get(s1) > map.get(s2)) {
+                    return -1;
+                }
+                int cmp = s1.compareTo(s2);
+                return cmp;
+            }
+        });
 
         PrintWriter output = new PrintWriter(new FileWriter("./output.txt"));
         for (int i = 0; i < ret.length; i++) {
-            ret[i] = sortedList.get(i);
+            ret[i] = finalList.get(i);
             output.println(ret[i]);
         }
         output.close();
         return ret;
-    }
-
-    static class ValueComparator<K, V extends Comparable<V>> implements Comparator<K> {
-
-        Map<K, V> map;
-
-        public ValueComparator(Map<K, V> base) {
-            this.map = base;
-        }
-
-        @Override
-        public int compare(K o1, K o2) {
-            return map.get(o2).compareTo(map.get(o1));
-        }
     }
 
     public static void main(String[] args) throws Exception {
